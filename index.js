@@ -39,7 +39,9 @@ app.post("/insertData", async (req, res) => {
     const fileData = formData.image;
     // console.log(fileData);
 
-    const cloudinaryResult = await cloudinary.uploader.upload(fileData);
+    const cloudinaryResult = await cloudinary.uploader.upload(fileData, {
+      eager_async: true,
+    });
     console.log(cloudinaryResult);
 
     const result = await bannerModel
@@ -59,10 +61,16 @@ app.post("/insertData", async (req, res) => {
 });
 
 app.get("/getData", async (req, res) => {
-  await bannerModel
+  const limit = req.query.limit;
+  const pageNumber = req.query.page;
+  const skip = (pageNumber - 1) * limit;
+  const totalDocument = await bannerModel.countDocuments();
+  const data = await bannerModel
     .find()
-    .then((data) => res.json(data))
-    .catch((err) => res.json(err));
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+  res.json({ record: data, totalDocument: totalDocument });
 });
 
 app.get("/getDatas/:id", async (req, res) => {
@@ -76,10 +84,13 @@ app.get("/getDatas/:id", async (req, res) => {
 
 app.patch("/updateData/:id", async (req, res) => {
   const updateDatavalue = req.body.data;
+  console.log("Editable Data Value is", updateDatavalue);
   try {
     const imageData = updateDatavalue.image;
-
-    const cloudinaryImageRsult = await cloudinary.uploader.upload(imageData);
+    const cloudinaryImageResult = await cloudinary.uploader.upload(imageData, {
+      eager_async: true,
+    });
+    console.log("Cloudinary Image Result is ", cloudinaryImageResult);
     await bannerModel
       .updateOne(
         { _id: req.params.id },
@@ -87,11 +98,11 @@ app.patch("/updateData/:id", async (req, res) => {
           title: updateDatavalue.title,
           status: updateDatavalue.status,
           position: updateDatavalue.position,
-          image: cloudinaryImageRsult.url,
+          image: cloudinaryImageResult.url,
         }
       )
       .then((data) => res.json(data))
-      .catch((err) => console.log("error is ",err));
+      .catch((err) => console.log("error is ", err));
   } catch (err) {
     console.log(err);
   }
@@ -101,11 +112,24 @@ app.post("/file", async (req, res) => {
   const file = req.files;
 });
 
-app.delete("/deleteData", async (req, res) => {
+app.delete("/deletebannerData/:id", async (req, res) => {
   await bannerModel
-    .deleteMany({})
+    .deleteOne({ _id: req.params.id })
     .then((data) => res.json(data))
     .catch((err) => res.json(err));
+});
+
+app.patch("/updateStatus/:id", async (req, res) => {
+  const parameters = await req.params;
+  console.log("Parameter is", parameters);
+  const updateData = await req.body;
+
+  console.log("Body Data is", updateData);
+  const response = await bannerModel
+    .find({ _id: req.params.id })
+    .updateOne({ },{status: req.body.statusData});
+
+    console.log("Response is", response);
 });
 
 // app.get("/readData", async (req, res) => {
