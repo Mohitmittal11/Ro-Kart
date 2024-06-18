@@ -3,7 +3,7 @@
   "name": "ro-kart",
   "builds": [
     {
-      "src": "index.js",
+      "src": ".js",
       "use": "@vercel/node"
     }
   ],
