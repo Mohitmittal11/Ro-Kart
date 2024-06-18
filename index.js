@@ -28,7 +28,7 @@ cloudinary.config({
 });
 
 app.get("/", async (req, res) => {
-  res.send("This is a Get Request");
+  res.send("This is a Get request Perform by port server");
 });
 
 app.post("/insertData", async (req, res) => {
