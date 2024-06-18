@@ -22,8 +22,8 @@ app.use(
 );
 
 cloudinary.config({
-  cloud_name: "dsgjk1cwj",
-  api_key: "553337719416259",
+  cloud_name: process.env.cloud_name,
+  api_key: process.env.api_key,
   api_secret: process.env.CLOUDINARY_SECRET_KEY,
 });
 
