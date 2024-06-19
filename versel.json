@@ -1,16 +1,6 @@
 {
-  "version": 2,
-  "name": "ro-kart",
-  "builds": [
-    {
-      "src": ".js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ]
+	"framework": null,
+	"installCommand": null,
+	"buildCommand": "",
+	"outputDirectory": "public"
 }
