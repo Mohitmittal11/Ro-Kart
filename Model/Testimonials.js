@@ -1,4 +1,3 @@
-const { HostAddress } = require("mongodb");
 const mongoose = require("mongoose");
 
 const TestimonialsSchema = new mongoose.Schema(
@@ -17,13 +16,13 @@ const TestimonialsSchema = new mongoose.Schema(
     description: {
       type: String,
     },
-    status:{
-        type:String
+    status: {
+      type: String,
     },
-    isDelete:{
-        type: Boolean,
-        default: false
-    }
+    isDelete: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

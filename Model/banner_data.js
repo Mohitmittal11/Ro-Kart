@@ -14,6 +14,10 @@ const BannerSchema = new mongoose.Schema(
     status: {
       type: String,
     },
+    isDelete: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
