@@ -2,22 +2,23 @@ const subscriptionModel = require("../Model/subscription");
 const cloudinary = require("../Cloudinary/config");
 exports.addSubscriptionUser = async (req, res) => {
   try {
-    const result = await req.body;
-    console.log("Result is ", result);
+    const completeformData = await req.body;
 
-    if (result) {
+    if (req.file.path) {
       const cloudinaryImageRes = await cloudinary.uploader.upload(
-        result.image,
+        req.file.path,
         { eager_async: true }
       );
 
-      console.log("Cloudinary result is ", cloudinaryImageRes);
-
-      const formResultData = { ...result, image: cloudinaryImageRes.url };
-
+      const formResultData = {
+        ...completeformData,
+        image: cloudinaryImageRes.secure_url,
+      };
       const response = await subscriptionModel.create(formResultData);
 
-      res.json(response);
+      if (response) {
+        res.json({ statusCode: 200, data: response });
+      }
     }
   } catch (err) {
     res.json(err);

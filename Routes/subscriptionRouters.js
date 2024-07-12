@@ -1,9 +1,16 @@
 const express = require("express");
 const subscriptionRouter = express.Router();
 const SubscriptionController = require("../Controllers/subscriptioncontroller");
-const validator= require('../Middleware/validatorMiddleware');
+const validator = require("../Middleware/validatorMiddleware");
+const upload = require("../Multer/multerConfig");
 
-subscriptionRouter.post("/addsubscriptiondata",validator('subscription'), SubscriptionController.addSubscriptionUser);
+subscriptionRouter.post(
+  "/addsubscriptiondata",
+  upload.single("image"),
+  validator("subscription"),
+
+  SubscriptionController.addSubscriptionUser
+);
 
 subscriptionRouter.get(
   "/getCompleteSubscriptionData",
@@ -35,5 +42,4 @@ subscriptionRouter.patch(
   SubscriptionController.subscriptionStatus_Update
 );
 
-
-module.exports= subscriptionRouter;
+module.exports = subscriptionRouter;

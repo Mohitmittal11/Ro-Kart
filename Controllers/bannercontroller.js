@@ -1,32 +1,25 @@
 const bannerModel = require("../Model/banner_data");
-
 const cloudinary = require("cloudinary").v2;
-
 exports.addData = async (req, res) => {
-  const formData = await req.body;
-  console.log("Form Data is", formData);
+  const bodyReqest = await req.body;
 
   try {
-    const fileData = formData.image;
-
-    const cloudinaryResult = await cloudinary.uploader.upload(fileData, {
+    const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
       eager_async: true,
     });
     console.log(cloudinaryResult);
 
-    const result = await bannerModel
-      .create([
-        {
-          title: formData?.title,
-          image: cloudinaryResult?.url,
-          position: formData?.position,
-          status: formData?.status,
-        },
-      ])
-      .then((data) => res.json({ statusCode: 200, data: data }))
-      .catch((err) => res.json(err));
+    const formdatatoUpdate = {
+      ...bodyReqest,
+      image: cloudinaryResult.secure_url,
+    };
+
+    const result = await bannerModel.create(formdatatoUpdate);
+    if (result) {
+      res.json({ statusCode: 200, data: result });
+    }
   } catch (err) {
-    console.log("Error is ", err);
+    res.json({ error: err });
   }
 };
 

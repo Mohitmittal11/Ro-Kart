@@ -1,9 +1,11 @@
+const { required } = require("joi");
 const mongoose = require("mongoose");
 
 const SubscriptionData = new mongoose.Schema(
   {
     image: {
       type: String,
+      required: true,
     },
     subscription_type: {
       type: String,
