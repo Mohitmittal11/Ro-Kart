@@ -28,12 +28,19 @@ exports.getdatabylimit = async (req, res) => {
   const pageNumber = req.query.page;
   const skip = (pageNumber - 1) * limit;
   const totalDocument = await bannerModel.countDocuments({ isDelete: false });
-  const data = await bannerModel
-    .find({ isDelete: false })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-  res.json({ record: data, totalDocument: totalDocument });
+  try {
+    const data = await bannerModel
+      .find({ isDelete: false })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    if (data) {
+      res.json({ record: data, totalDocument: totalDocument });
+    }
+  } catch (err) {
+    res.json({ errorMessage: err });
+  }
 };
 
 exports.getDatabyId = async (req, res) => {
