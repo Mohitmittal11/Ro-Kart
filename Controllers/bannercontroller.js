@@ -24,19 +24,47 @@ exports.addData = async (req, res) => {
 };
 
 exports.getdatabylimit = async (req, res) => {
-  const limit = req.query.limit;
-  const pageNumber = req.query.page;
+  const limit = req.query.limit ? req.query.limit : 5;
+  const pageNumber = req.query.page ? req.query.page : 1;
+  const title = req?.query?.title;
+  const status = req?.query?.status;
   const skip = (pageNumber - 1) * limit;
-  const totalDocument = await bannerModel.countDocuments({ isDelete: false });
   try {
+    let conditions = {
+      isDelete: false,
+    };
+    if (title && title !== null && title !== undefined) {
+      conditions = {
+        ...conditions,
+        title: { $regex: `${title}`, $options: "i" },
+      };
+    }
+    if (status && status !== null && status !== undefined) {
+      conditions = {
+        ...conditions,
+        status: status,
+      };
+    }
+
+    console.log(conditions, "conditions");
     const data = await bannerModel
-      .find({ isDelete: false })
+      .find(conditions)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-
-    if (data) {
-      res.json({ record: data, totalDocument: totalDocument });
+    const totalDocument = await bannerModel.countDocuments(conditions);
+    if (data && data.length > 0) {
+      res.json({
+        totalDocument: totalDocument,
+        message: "Data found successfuly",
+        record: data,
+      });
+    } else {
+      res.json({
+        totalDocument: totalDocument,
+        message: "No data found",
+        record: data,
+      });
     }
   } catch (err) {
     res.json({ errorMessage: err });
@@ -98,3 +126,72 @@ exports.updateStatus = async (req, res) => {
     res.json({ updatemessage: response });
   }
 };
+
+// exports.getNamedmatchData = async (req, res) => {
+//   const titleMatched = await req?.body?.title;
+//   const statusMatched = await req?.body?.status;
+//   const limit = req?.query?.limit;
+//   const page = req?.query?.page;
+//   const skipDocument = (page - 1) * limit;
+//   console.log("Name Match Data is ", titleMatched);
+//   console.log("Status Matched Data is ", statusMatched);
+
+//   try {
+//     if (titleMatched) {
+//       const totalMatchedDocument = await bannerModel.countDocuments({
+//         $text: { $search: `${titleMatched}` },
+//         isDelete: false,
+//       });
+
+//       console.log("Total Document is ", totalMatchedDocument);
+//       const result = await bannerModel
+//         .find({
+//           $text: { $search: `${titleMatched}` },
+//           isDelete: false,
+//         })
+//         .sort({ createdAt: -1 })
+//         .skip(skipDocument)
+//         .limit(limit);
+//       if (result) {
+//         res.json({
+//           statusCode: 200,
+//           data: result,
+//           totalMatchedDocument: totalMatchedDocument,
+//         });
+//       } else {
+//         res.json({ errorMessage: "Data Does not Match" });
+//       }
+//     } else if (statusMatched) {
+//       const totalMatchedDocument = await bannerModel.countDocuments({
+//         status: statusMatched,
+//         isDelete: false,
+//       });
+//       const matchedStatusResult = await bannerModel
+//         .find({
+//           status: statusMatched,
+//           isDelete: false,
+//         })
+//         .sort({ createdAt: -1 })
+//         .skip(skipDocument)
+//         .limit(limit);
+
+//       if (matchedStatusResult) {
+//         res.json({
+//           statusCode: 200,
+//           data: matchedStatusResult,
+//           totalMatchedDocument: totalMatchedDocument,
+//         });
+//       }
+//     }
+//     // else if (statusMatched && titleMatched) {
+//     //   const totalDocuments = bannerModel.countDocuments({
+//     //     status: statusMatched,
+//     //     $search: { $text: `${titleMatched}`, isDelete: false },
+//     //   });
+
+//     //   console.log("Total Document that data contain is", totalDocuments);
+//     // }
+//   } catch (err) {
+//     res.json({ errorMessage: err });
+//   }
+// };

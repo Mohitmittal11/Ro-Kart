@@ -1,4 +1,5 @@
 const testimonialsModel = require("../Model/Testimonials");
+const { message } = require("../ValidationSchema/bannerValidation");
 
 exports.add_Testimonialdata = async (req, res) => {
   const bodyData = await req.body;
@@ -6,7 +7,7 @@ exports.add_Testimonialdata = async (req, res) => {
   if (bodyData) {
     try {
       const result = await testimonialsModel.create(bodyData);
-      res.json(result);
+      res.json({ statusCode: 200, record: result });
     } catch (err) {
       res.json(err);
     }
@@ -14,16 +15,30 @@ exports.add_Testimonialdata = async (req, res) => {
 };
 
 exports.get_Testimonial_databylimit = async (req, res) => {
-  const limit = req.query.limit;
-  const page = req.query.page;
+  const limit = req.query.limit ? req.query.limit : 5;
+  const page = req.query.page ? req.query.page : 1;
   const skip = (page - 1) * limit;
-  console.log(`Limit is ${limit} and Page is ${page}`);
-  const totalDocument = await testimonialsModel.countDocuments({
-    isDelete: false,
-  });
+  const status = req?.query?.status;
+  const username = req?.query?.username;
+  let testimonialsConditions = { isDelete: false };
 
+  if (username && username !== null && username !== undefined) {
+    testimonialsConditions = {
+      ...testimonialsConditions,
+      username: { $regex: `${username}`, $options: "i" },
+    };
+  }
+  if (status && status !== null && status !== undefined) {
+    testimonialsConditions = { ...testimonialsConditions, status: status };
+  }
+
+  const totalDocument = await testimonialsModel.countDocuments(
+    testimonialsConditions
+  );
+
+  console.log(testimonialsConditions, "Testimonial get Data condition is");
   const result = await testimonialsModel
-    .find({ isDelete: false })
+    .find(testimonialsConditions)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -35,14 +50,17 @@ exports.get_Testimonial_databylimit = async (req, res) => {
 };
 
 exports.get_Testimonial_Data_byId = async (req, res) => {
-  const idTogetData = await req.params.id;
+  const idTogetData = await req?.params?.id;
 
-  console.log("Id to Get Data", idTogetData);
-  if (idTogetData) {
+  if (idTogetData && idTogetData !== null && idTogetData !== undefined) {
     try {
       const result = await testimonialsModel.findOne({ _id: req.params.id });
 
-      res.json({ statusCode: 200, data: result });
+      res.json({
+        statusCode: 200,
+        data: result,
+        message: "Data Found Successfully",
+      });
     } catch (err) {
       res.json({ statusCode: 400, data: err.message });
     }
@@ -50,20 +68,18 @@ exports.get_Testimonial_Data_byId = async (req, res) => {
 };
 
 exports.updateTestimonialData = async (req, res) => {
-  const idtoUpdateData = await req.params.id;
-
-  console.log("Id to Update Data is", idtoUpdateData);
+  const idtoUpdateData = await req?.params?.id;
 
   const result = await testimonialsModel.updateOne(
     { _id: idtoUpdateData },
     {
-      username: req?.body?.bodyData?.username,
+      username: req?.body?.username,
       address: {
-        place: req.body?.bodyData?.address?.place,
-        city: req.body?.bodyData?.address?.city,
+        place: req.body?.address?.place,
+        city: req.body?.address?.city,
       },
-      description: req.body?.bodyData?.description,
-      status: req.body?.bodyData?.status,
+      description: req.body?.description,
+      status: req.body?.status,
     }
   );
   if (result) {
@@ -99,9 +115,8 @@ exports.delete_Testimonial_Data = async (req, res) => {
 };
 
 exports.update_Testimonial_Status = async (req, res) => {
-  const id = req.params.id;
-  const value = req.body.value;
-  console.log(`Id for Status Update is ${id} and Status Value is ${value}`);
+  const id = req?.params?.id;
+  const value = req?.body?.value;
   const result = await testimonialsModel.updateOne(
     { _id: id },
     { status: value }

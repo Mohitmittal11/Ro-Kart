@@ -5,6 +5,7 @@ module.exports = function (validator) {
   return async function (req, res, next) {
     try {
       let completeFilePath = req.body;
+      console.log("Complete file data ois ", completeFilePath);
       if (req?.file?.path) {
         console.log("File path that is saved on the server is", req.file.path);
         completeFilePath = { ...completeFilePath, image: req.file.path };
